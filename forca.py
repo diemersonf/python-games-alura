@@ -19,11 +19,49 @@ def jogar():
 	n_tentativas = 0
 	pontuacao = 100
 	diminui_pontuacao = 0
+	
+	diminui_pontuacao, n_tentativas, palavra_secreta, pontuacao = monta_cabecalho(diminui_pontuacao, n_palavras, n_tentativas, pontuacao, url)
+	
+	while(not acertou and not enforcou):
+		# Use the next line every time you wish to 'clear' the screen. Works with Windows and Linux.
+		os.system('cls' if os.name == 'nt' else 'clear')
+		
+		index = 0
+		acertou = False
+		
+		print("Você possui {} tentativas para não se enforcar e atualmente você possui {} pontos!!!".format(n_tentativas, pontuacao))
+		
+		opcao_chute_palavra_secreta = input('''
+			\nDeseja tentar informar a palavra secreta sem tentar chutar uma letra e aumentar assim a sua pontuação?
+			Digite 1 - Sim
+			Digite 2 - Não
+		
+			Informe a sua escolha: ''')
+		
+		if(opcao_chute_palavra_secreta == '1' or n_tentativas == 1 or palavra_atual.count(simbolo_divisor) == 1):
+			acertou, enforcou, pontuacao = valida_palavra_informada(acertou, enforcou, index, n_tentativas, palavra_atual, palavra_secreta, pontuacao, simbolo_divisor)
+		else:
+			chute = input("\nOk. Vamos continuar.\nInforme uma letra? ").strip().upper()
+			print("Você chutou a letra: {}".format(chute))
+			
+			mensagem, n_tentativas, pontuacao = valida_chute(chute, diminui_pontuacao, mensagem, n_tentativas, palavra_acertada, palavra_secreta, pontuacao, simbolo_divisor)
+			
+			palavra_final = atualiza_palavra_final(index, palavra_acertada, palavra_atual, palavra_final, simbolo_divisor)
+			
+			print("\n{}".format(mensagem))
+			print("\nPalavra: {}".format(palavra_final).strip())
+			
+		palavra_acertada.clear()
+		palavra_final = ""
+	
+		
+	print("\nFIM DE JOGO.")
 
+
+def monta_cabecalho(diminui_pontuacao, n_palavras, n_tentativas, pontuacao, url):
 	print("***************************")
 	print("Bem vindo ao jogo de Forca!")
 	print("***************************")
-	
 	nivel_dificuldade = input('''
 	Escolha o nível de dificuldade:
 	1 - Fácil
@@ -32,7 +70,6 @@ def jogar():
 	4 - Muito Difícil
 	
 	Digite a opção escolhida:''')
-	
 	idioma_palavras = input('''
 	Escolha uma das opções de idioma abaixo:
 	1 - Português
@@ -42,7 +79,6 @@ def jogar():
 	5 - Espanhol
 
 	Digite a opção escolhida:''')
-	
 	if idioma_palavras == '1':
 		idioma = 'palavras-aleatorias'
 	elif idioma_palavras == '2':
@@ -53,10 +89,8 @@ def jogar():
 		idioma = 'mots-aleatoires'
 	elif idioma_palavras == '5':
 		idioma = 'index'
-	
 	palavra_secreta = busca_palavra(idioma, n_palavras, url)
-	#print(palavra_secreta) #ToDO retirar este print. Ele serve apenas para fase de testes.
-	
+	print(palavra_secreta)  # TODO retirar
 	if nivel_dificuldade == '1':
 		n_tentativas = round(len(palavra_secreta) * 2.5)
 		pontuacao = pontuacao * 1
@@ -69,94 +103,73 @@ def jogar():
 	elif nivel_dificuldade == '4':
 		n_tentativas = len(palavra_secreta)
 		pontuacao = pontuacao * 4
-
 	diminui_pontuacao = round(pontuacao / n_tentativas)
-	
 	print("\nVamos começar!!!")
-	print("\nA qualquer momento você poderá chutar a palavra secreta ou tentar adivinhar uma letra da palavra secreta!!!")
+	print(
+		"\nA qualquer momento você poderá chutar a palavra secreta ou tentar adivinhar uma letra da palavra secreta!!!")
 	print("\n***A palavra possui {} letras***".format(len(palavra_secreta)))
-	
-	while(not acertou and not enforcou):
-		# Use the next line every time you wish to 'clear' the screen. Works with Windows and Linux.
-		os.system('cls' if os.name == 'nt' else 'clear')
-		
-		index = 0
-		acertou = False
-		
-		print("Você possui {} tentativas para não se enforcar e atualmente você possui {} pontos!!!".format(n_tentativas, pontuacao))
-		
-		opcao_chute_palavra_secreta = input('''
-		\nDeseja tentar informar a palavra secreta sem tentar chutar uma letra e aumentar assim a sua pontuação?
-		Digite 1 - Sim
-		Digite 2 - Não
-		
-		Informe a sua escolha: ''')
-		
-		if(opcao_chute_palavra_secreta == '1' or n_tentativas == 1):
-			if not n_tentativas == 1:
-				chute_palavra_secreta = input("Vamos lá. Qual o seu palpite sobre a palavra secreta:")
-			else:
-				chute_palavra_secreta = input("Infelizmente esta é a sua última chance. Então informe qual é a palavra secreta:")
-			
-			if(chute_palavra_secreta.upper() == palavra_secreta.upper()):
-				print("\nMeus parabéns você acertou :) :) :)")
-				if(index == 0):
-					print("Você alcançou a pontuação máxima!!! Você fez {} pontos".format(pontuacao) * 4)
-				else:
-					print("Você fez {} pontos".format(pontuacao))
-				acertou = True
-			else:
-				print("Que Pena :( Você se enforcou e não acertou a palavra secreta. Sua pontuação foi 0")
-				enforcou = True
-				pontuacao = 0
-		else:
-			print("Ok. Vamos continuar.")
-			chute = input("\nInforme uma letra? ").strip().upper()
-			print("Você chutou a letra: {}".format(chute))
+	return diminui_pontuacao, n_tentativas, palavra_secreta, pontuacao
 
-			for letra in palavra_secreta:
-				if (chute == letra):
-					palavra_acertada.append(letra)
-					mensagem = ":) Parabéns você acertou, vamos para a próxima.\n"
-					acertou = True
-				else:
-					palavra_acertada.append(simbolo_divisor)
-					if not acertou:
-						acertou = False
-						mensagem = ":( Você errou tente novamente.\n"
-					
-			for le in palavra_acertada:
-				if (len(palavra_atual) < len(palavra_acertada)):
-					palavra_atual.append(le)
-				else:
-					if ((le == simbolo_divisor) and (palavra_atual[index] != simbolo_divisor)):
-						palavra_atual[index] = palavra_atual[index]
-					else:
-						palavra_atual[index] = le
-	
-				index = index + 1
-				
-			for x in palavra_atual:
-				palavra_final = palavra_final + x + " "
-			
-			if (simbolo_divisor not in palavra_final):
-				print("Parabéns!!!\nVocê acertou a palavra secreta sem se enforcar. :) :) :)")
-				print("A palavra secreta é: {} e você fez {} pontos".format(palavra_final, pontuacao))
-				acertou = True
-			else:
-				print("\n{}".format(mensagem))
-				print("\nPalavra: {}".format(palavra_final).strip())
-				acertou = False
-				n_tentativas = n_tentativas - 1
-				pontuacao = pontuacao - diminui_pontuacao
-				if(n_tentativas == 0):
-					enforcou = True
-					print("Você se enforcou e não acertou a palavra secreta. Tente novamente!!!")
-			
-		palavra_final = ""
-		palavra_acertada.clear()
+
+def valida_palavra_informada(acertou, enforcou, index, n_tentativas, palavra_atual, palavra_secreta, pontuacao, simbolo_divisor):
+	if n_tentativas == 1:
+		chute_palavra_secreta = input(
+			"Infelizmente esta é a sua última chance. Então informe qual é a palavra secreta:\n")
+	elif (palavra_atual.count(simbolo_divisor) == 1):
+		chute_palavra_secreta = input("Falta apenas 1 letra, logo você não pode mais chutar letras. Então informe a palavra secreta:\n")
+	else:
+		chute_palavra_secreta = input("Vamos lá. Qual o seu palpite sobre a palavra secreta:\n")
 		
-	print("\nFIM DE JOGO.")
+	if (chute_palavra_secreta.upper() == palavra_secreta.upper()):
+		print("\nMeus parabéns você acertou :) :) :)")
+		
+		if (index == 0):
+			print("Você alcançou a pontuação máxima!!! Você fez {} pontos".format(pontuacao) * 4)
+		else:
+			print("Você fez {} pontos".format(pontuacao))
+			
+		acertou = True
+	else:
+		print("Que Pena :( Você se enforcou e não acertou a palavra secreta. Sua pontuação foi 0\n A palavra secreta é: {}".format(palavra_secreta))
+		enforcou = True
+		pontuacao = 0
+		
+	return acertou, enforcou, pontuacao
+
+
+def valida_chute(chute, diminui_pontuacao, mensagem, n_tentativas, palavra_acertada, palavra_secreta, pontuacao, simbolo_divisor):
+	if (chute in palavra_secreta):
+		mensagem = ":) Parabéns você acertou a letra, vamos para a próxima.\n"
+		
+		for letra in palavra_secreta:
+			if (chute == letra):
+				palavra_acertada.append(letra)
+			else:
+				palavra_acertada.append(simbolo_divisor)
+	else:
+		mensagem = ":( Você errou tente novamente.\n"
+		n_tentativas = n_tentativas - 1
+		pontuacao = pontuacao - diminui_pontuacao
+		
+	return mensagem, n_tentativas, pontuacao
+
+
+def atualiza_palavra_final(index, palavra_acertada, palavra_atual, palavra_final, simbolo_divisor):
+	for le in palavra_acertada:
+		if (len(palavra_atual) < len(palavra_acertada)):
+			palavra_atual.append(le)
+		else:
+			if ((le == simbolo_divisor) and (palavra_atual[index] != simbolo_divisor)):
+				palavra_atual[index] = palavra_atual[index]
+			else:
+				palavra_atual[index] = le
+		
+		index = index + 1
+	for x in palavra_atual:
+		palavra_final = palavra_final + x + " "
+		
+	return palavra_final
+
 
 def busca_palavra(idioma, n_palavras, url):
 	url = url + idioma + ".php?fs=" + str(n_palavras)
@@ -175,6 +188,7 @@ def busca_palavra(idioma, n_palavras, url):
 		n = re.search('</div>', string)
 		start = n.start()
 		palavra_secreta = unidecode(string[end:start]).upper().strip()
+		
 	return palavra_secreta
 
 if(__name__ == "__main__"):
