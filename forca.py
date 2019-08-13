@@ -3,11 +3,12 @@ import urllib.request
 from bs4 import *
 from urllib.request import Request, urlopen
 from unidecode import unidecode
+import os
 
 def jogar():
 
-	url = "http://www.palabrasaleatorias.com/"
-	simbolo_divisor = "_"
+	url = "http://www.palabrasaleatorias.com/" #url base utilizada do gerador de palavras
+	simbolo_divisor = "_" #simbolo divisor para identificar letra ainda não acertada
 	enforcou = False
 	acertou = False
 	palavra_acertada = []
@@ -15,14 +16,25 @@ def jogar():
 	mensagem = ""
 	palavra_final = ""
 	n_palavras = 1
+	n_tentativas = 0
+	pontuacao = 100
+	diminui_pontuacao = 0
 
 	print("***************************")
 	print("Bem vindo ao jogo de Forca!")
 	print("***************************")
 	
+	nivel_dificuldade = input('''
+	Escolha o nível de dificuldade:
+	1 - Fácil
+	2 - Médio
+	3 - Difícil
+	4 - Muito Difícil
+	
+	Digite a opção escolhida:''')
+	
 	idioma_palavras = input('''
 	Escolha uma das opções de idioma abaixo:
-
 	1 - Português
 	2 - Inglês
 	3 - Italiano
@@ -43,46 +55,108 @@ def jogar():
 		idioma = 'index'
 	
 	palavra_secreta = busca_palavra(idioma, n_palavras, url)
+	#print(palavra_secreta) #ToDO retirar este print. Ele serve apenas para fase de testes.
+	
+	if nivel_dificuldade == '1':
+		n_tentativas = round(len(palavra_secreta) * 2.5)
+		pontuacao = pontuacao * 1
+	elif nivel_dificuldade == '2':
+		n_tentativas = round(len(palavra_secreta) * 2)
+		pontuacao = pontuacao * 2
+	elif nivel_dificuldade == '3':
+		n_tentativas = round(len(palavra_secreta) * 1.5)
+		pontuacao = pontuacao * 3
+	elif nivel_dificuldade == '4':
+		n_tentativas = len(palavra_secreta)
+		pontuacao = pontuacao * 4
+
+	diminui_pontuacao = round(pontuacao / n_tentativas)
 	
 	print("\nVamos começar!!!")
+	print("\nA qualquer momento você poderá chutar a palavra secreta ou tentar adivinhar uma letra da palavra secreta!!!")
 	print("\n***A palavra possui {} letras***".format(len(palavra_secreta)))
 	
 	while(not acertou and not enforcou):
+		# Use the next line every time you wish to 'clear' the screen. Works with Windows and Linux.
+		os.system('cls' if os.name == 'nt' else 'clear')
+		
 		index = 0
-		chute = input("\nInforme seu palpite? ").strip().upper()
-		print("Você chutou a letra: {}".format(chute))
-
-		for letra in palavra_secreta:
-			if (chute == letra):
-				palavra_acertada.append(letra)
-				mensagem = ":) Parabéns você acertou, vamos para a próxima."
+		acertou = False
+		
+		print("Você possui {} tentativas para não se enforcar e atualmente você possui {} pontos!!!".format(n_tentativas, pontuacao))
+		
+		opcao_chute_palavra_secreta = input('''
+		\nDeseja tentar informar a palavra secreta sem tentar chutar uma letra e aumentar assim a sua pontuação?
+		Digite 1 - Sim
+		Digite 2 - Não
+		
+		Informe a sua escolha: ''')
+		
+		if(opcao_chute_palavra_secreta == '1' or n_tentativas == 1):
+			if not n_tentativas == 1:
+				chute_palavra_secreta = input("Vamos lá. Qual o seu palpite sobre a palavra secreta:")
 			else:
-				palavra_acertada.append(simbolo_divisor)
-				mensagem = ":( Você errou tente novamente."
-				
-		for le in palavra_acertada:
-			if (len(palavra_atual) < len(palavra_acertada)):
-				palavra_atual.append(le)
-			else:
-				if ((le == simbolo_divisor) and (palavra_atual[index] != simbolo_divisor)):
-					palavra_atual[index] = palavra_atual[index]
+				chute_palavra_secreta = input("Infelizmente esta é a sua última chance. Então informe qual é a palavra secreta:")
+			
+			if(chute_palavra_secreta.upper() == palavra_secreta.upper()):
+				print("\nMeus parabéns você acertou :) :) :)")
+				if(index == 0):
+					print("Você alcançou a pontuação máxima!!! Você fez {} pontos".format(pontuacao) * 4)
 				else:
-					palavra_atual[index] = le
+					print("Você fez {} pontos".format(pontuacao))
+				acertou = True
+			else:
+				print("Que Pena :( Você se enforcou e não acertou a palavra secreta. Sua pontuação foi 0")
+				enforcou = True
+				pontuacao = 0
+		else:
+			print("Ok. Vamos continuar.")
+			chute = input("\nInforme uma letra? ").strip().upper()
+			print("Você chutou a letra: {}".format(chute))
 
-			index = index + 1
-		
-		for x in palavra_atual:
-			palavra_final = palavra_final + x + " "
-		
-		print("\n{}".format(mensagem))
-		print("\nPalavra: {}".format(palavra_final).strip())
-		
+			for letra in palavra_secreta:
+				if (chute == letra):
+					palavra_acertada.append(letra)
+					mensagem = ":) Parabéns você acertou, vamos para a próxima.\n"
+					acertou = True
+				else:
+					palavra_acertada.append(simbolo_divisor)
+					if not acertou:
+						acertou = False
+						mensagem = ":( Você errou tente novamente.\n"
+					
+			for le in palavra_acertada:
+				if (len(palavra_atual) < len(palavra_acertada)):
+					palavra_atual.append(le)
+				else:
+					if ((le == simbolo_divisor) and (palavra_atual[index] != simbolo_divisor)):
+						palavra_atual[index] = palavra_atual[index]
+					else:
+						palavra_atual[index] = le
+	
+				index = index + 1
+				
+			for x in palavra_atual:
+				palavra_final = palavra_final + x + " "
+			
+			if (simbolo_divisor not in palavra_final):
+				print("Parabéns!!!\nVocê acertou a palavra secreta sem se enforcar. :) :) :)")
+				print("A palavra secreta é: {} e você fez {} pontos".format(palavra_final, pontuacao))
+				acertou = True
+			else:
+				print("\n{}".format(mensagem))
+				print("\nPalavra: {}".format(palavra_final).strip())
+				acertou = False
+				n_tentativas = n_tentativas - 1
+				pontuacao = pontuacao - diminui_pontuacao
+				if(n_tentativas == 0):
+					enforcou = True
+					print("Você se enforcou e não acertou a palavra secreta. Tente novamente!!!")
+			
 		palavra_final = ""
 		palavra_acertada.clear()
 		
-		print("\njogando...")
-		
-	print("\nFim do jogo")
+	print("\nFIM DE JOGO.")
 
 def busca_palavra(idioma, n_palavras, url):
 	url = url + idioma + ".php?fs=" + str(n_palavras)
@@ -101,7 +175,6 @@ def busca_palavra(idioma, n_palavras, url):
 		n = re.search('</div>', string)
 		start = n.start()
 		palavra_secreta = unidecode(string[end:start]).upper().strip()
-		print(palavra_secreta)
 	return palavra_secreta
 
 if(__name__ == "__main__"):
