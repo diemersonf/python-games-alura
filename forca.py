@@ -70,6 +70,7 @@ def monta_cabecalho(diminui_pontuacao, n_palavras, n_tentativas, pontuacao, url)
 	4 - Muito Difícil
 	
 	Digite a opção escolhida:''')
+	
 	idioma_palavras = input('''
 	Escolha uma das opções de idioma abaixo:
 	1 - Português
@@ -79,6 +80,7 @@ def monta_cabecalho(diminui_pontuacao, n_palavras, n_tentativas, pontuacao, url)
 	5 - Espanhol
 
 	Digite a opção escolhida:''')
+	
 	if idioma_palavras == '1':
 		idioma = 'palavras-aleatorias'
 	elif idioma_palavras == '2':
