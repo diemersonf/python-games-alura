@@ -90,7 +90,7 @@ def monta_cabecalho(diminui_pontuacao, n_palavras, n_tentativas, pontuacao, url)
 	elif idioma_palavras == '5':
 		idioma = 'index'
 	palavra_secreta = busca_palavra(idioma, n_palavras, url)
-	print(palavra_secreta)  # TODO retirar
+	
 	if nivel_dificuldade == '1':
 		n_tentativas = round(len(palavra_secreta) * 2.5)
 		pontuacao = pontuacao * 1
@@ -148,7 +148,7 @@ def valida_chute(chute, diminui_pontuacao, mensagem, n_tentativas, palavra_acert
 				palavra_acertada.append(simbolo_divisor)
 	else:
 		mensagem = ":( Você errou tente novamente.\n"
-		n_tentativas = n_tentativas - 1
+		n_tentativas -= 1
 		pontuacao = pontuacao - diminui_pontuacao
 		
 	return mensagem, n_tentativas, pontuacao
@@ -164,7 +164,7 @@ def atualiza_palavra_final(index, palavra_acertada, palavra_atual, palavra_final
 			else:
 				palavra_atual[index] = le
 		
-		index = index + 1
+		index += 1
 	for x in palavra_atual:
 		palavra_final = palavra_final + x + " "
 		
